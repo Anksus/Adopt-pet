@@ -3,9 +3,11 @@ import pet from "@frontendmasters/pet";
 import Carousel from "./Carousel";
 import ErrorBoundary from "./ErrorBoundary";
 import ThemeContext from "./ThemeContext";
+import Modal from "./Modal";
+import { navigate } from "@reach/router";
 
 class Details extends React.Component {
-  state = { loading: true };
+  state = { loading: true, showModal: false };
   componentDidMount() {
     pet
       .animal(+this.props.id)
@@ -18,17 +20,30 @@ class Details extends React.Component {
           media: animal.photos,
           breed: animal.breeds.primary,
           loading: false,
+          url: animal.url,
         });
       })
       .catch((err) => this.setState({ error: err }));
   }
+
+  toggleModal = () => this.setState({ showModal: !this.state.showModal });
+  Adopt = () => navigate(this.state.url);
 
   render() {
     if (this.state.loading) {
       return <h1>loading.....</h1>;
     }
 
-    const { name, animal, location, breed, description, media } = this.state;
+    const {
+      name,
+      animal,
+      location,
+      breed,
+      description,
+      media,
+      url,
+      showModal,
+    } = this.state;
 
     return (
       <div className="details">
@@ -38,13 +53,30 @@ class Details extends React.Component {
           <h2>{`${animal} - ${breed} - ${location}`}</h2>
           <ThemeContext.Consumer>
             {(themehook) => (
-              <button style={{ backgroundColor: themehook[0] }}>
+              <button
+                onClick={this.toggleModal}
+                style={{ backgroundColor: themehook[0] }}
+              >
                 Adopt {name}
               </button>
             )}
           </ThemeContext.Consumer>
 
           <p>{description}</p>
+
+          {showModal ? (
+            <Modal>
+              <div>
+                <h1>Would you like to adopt {name}?</h1>
+                <div className="buttons">
+                  <button onClick={this.Adopt}>Yes</button>
+                  <button onClick={this.toggleModal}>
+                    No! I am not ready,yet!
+                  </button>
+                </div>
+              </div>
+            </Modal>
+          ) : null}
         </div>
       </div>
     );
